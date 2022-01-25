@@ -1,20 +1,57 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+import { createStore, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import thunk from 'redux-thunk';
+import themeReducer from './stores/themeReducer.js';
+import { MainLayout , CourseListing , CourseDetails } from './screens';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+
+const Stack = createSharedElementStackNavigator();
+const store = createStore(themeReducer, applyMiddleware(thunk));
+
+const options = {
+  gestureEnabled: false,
+  transitionSpec: {
+    open: {
+      animation: 'timing',
+      config: { duration: 400 },
+    },
+    close: {
+      animation: 'timing',
+      config: { duration: 400 },
+    },
   },
-});
+  cardStyleInterpolate: ({ current: { progress } }) => {
+    return {
+      cardStyle: {
+        opacity: progress,
+      },
+    };
+  },
+};
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            useNativeDriver: true,
+            headerShown: false,
+          }}
+          initialRouteName={'Dashboard'}
+          detachInactiveScreens={false}
+          >
+          <Stack.Screen name="Dashboard" component={MainLayout} />
+          <Stack.Screen name="CourseListing"  component={CourseListing}  options ={() => options} />
+            <Stack.Screen name="CourseDetails"  component={CourseDetails}   />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
+  );
+};
+
+export default App;
